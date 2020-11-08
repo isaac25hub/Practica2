@@ -1,12 +1,46 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -ansi
+######################################################################
+# $@ es el item que aparece a la izquierda de ':'
+# $< es el primer item en la lista de dependencias
+# $^ son todos los archivos que se encuentran a la derecha de ':'
+########################################################################
+
+CC = gcc -g -ansi -pedantic
+##CC = gcc -ansi -O3 -pedantic
+CFLAGS = -Wall
 LDLIBS = -lodbc
 
-EXE = odbc-connection-test odbc-connection-test-2 odbc-example1 odbc-example2 odbc-example3 odbc-example4
+export PGDATABASE :=classicmodels
+export PGUSER :=alumnodb
+export PGPASSWORD :=alumnodb
+export PGCLIENTENCODING :=LATIN9
+export PGHOST :=localhost
 
-all : $(EXE)
+DBNAME =$(PGDATABASE)
+PSQL = psql
+CREATEDB = createdb
+DROPDB = dropdb --if-exists
+PG_DUMP = pg_dump
+PG_RESTORE = pg_restore
 
-clean :
-	rm -f *.o core $(EXE)
+all: compile
 
-$(EXE) : % : %.o odbc.o
+menu.o: menu.c 
+	$(CC) -c $< $(CFLAGS)
+
+products.o: products.c odbc.c
+	$(CC) -c $^ $(CFLAGS) $(LDLIBS)	
+
+odbc.o: odbc.c
+	$(CC) -c $< $(CFLAGS) 
+
+main.o: main.c
+	$(CC) -c $< $(CFLAGS)
+
+compile: main.o menu.o products.o odbc.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
+	
+clean:
+	rm -f *.o
+	rm -f compile
+
+	

@@ -1,10 +1,14 @@
 #ifndef AUX_H
 #define AUX_H
 
-/* CONNECTION PARAMETERS, ADAPT TO YOUR SCENARIO */
-#define CONNECTION_PARS "DRIVER=psqlodbca.so;DATABASE=classicmodels;SERVER=localhost;PORT=5432;UID=postgres;PWD=/home/eps/Escritorio/odbc-examples/odbc-examples;"
+#include <sql.h>
+#include <sqlext.h>
 
-/* REPORT OF THE MOST RECENT ERROR USING HANDLE handle */
+/* CONNECTION PARAMETERS, ADAPT TO YOUR SCENARIO */
+#define CONNECTION_PARS "driver=psqlodbca.so;uid=alumnodb;" \
+        "pwd=/home/eps/Escritorio/Edat_p2;server=localhost;database=classicmodels"
+
+/* report most recient error */
 void odbc_extract_error(char *fn, SQLHANDLE handle, SQLSMALLINT type);
 
 /* STANDARD CONNECTION PROCEDURE */
@@ -13,4 +17,8 @@ int odbc_connect(SQLHENV* env, SQLHDBC* dbc);
 /* STANDARD DISCONNECTION PROCEDURE */
 int odbc_disconnect(SQLHENV env, SQLHDBC dbc);
 
+/* check errors */
+#define CHECK_ERROR(e, s, h, t) {\
+            if (e!=SQL_SUCCESS && e != SQL_SUCCESS_WITH_INFO) {odbc_extract_error(s, h, t); goto exit;} \
+}
 #endif

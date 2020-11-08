@@ -8,10 +8,11 @@
 #include "odbc.h"
 
 
-int StockQuery(void);
+int StockQuery();
+int FindQuery();
 
 
-int showProductMenu() {
+void showProductMenu() {
     int nChoice = 0;
 
     do {
@@ -24,7 +25,7 @@ int showProductMenu() {
                 break;
 
             case 2: {
-                
+                FindQuery();
             }
                 break;
 
@@ -100,7 +101,7 @@ int StockQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("quantityinstock = %d\n", y);
+            printf("quantityinstock = %ld\n", y);
         }
 
         (void) SQLCloseCursor(stmt);
@@ -109,6 +110,7 @@ int StockQuery() {
         (void) fflush(stdout);*/
     }
     printf("\n");
+    getchar();
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -127,15 +129,15 @@ int StockQuery() {
 }
 
 
-int main(void) {
+int FindQuery() {
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
-    #define BufferLength 512
-    int  x = 0;
-    char y[BufferLength] = "\0";
+    char  x[70];
+    char y[15];
+    char z[70];
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
@@ -145,33 +147,35 @@ int main(void) {
 
     /* Allocate a statement handle */
     ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
-    ret = SQLPrepare(stmt, (SQLCHAR*) "select productcode, productname from products where productname like ?", SQL_NTS);
+    ret = SQLPrepare(stmt, (SQLCHAR*) "select productcode, productname from products where productname like ? order by productcode", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
         return ret;
     }
 
 
-    printf("x = ");
+    printf("productname = ");
     (void) fflush(stdout);
-    while (scanf("%d", &x) != EOF) {
-        (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &x, 0, NULL);
+    if (scanf("%s", x) != EOF) {
+        (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, x, 0, NULL);
         
         (void) SQLExecute(stmt);
         
-        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) y, BufferLength, NULL);
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) y, 70, NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) z, 70, NULL);
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("y = %s\n", y);
+            printf("%s   %s\n", y, z);
         }
 
         (void) SQLCloseCursor(stmt);
 
-        printf("x = ");
-        (void) fflush(stdout);
+        /*printf("x = ");
+        (void) fflush(stdout);*/
     }
     printf("\n");
+    getchar();
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);

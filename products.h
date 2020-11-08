@@ -1,7 +1,7 @@
 #ifndef PRODUCTS_H
 #define PRODUCTS_H
 
-int showProductMenu();
+void showProductMenu();
 int ShowProductSubMenu();
 
 #endif
