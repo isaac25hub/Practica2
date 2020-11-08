@@ -135,6 +135,7 @@ int FindQuery() {
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
+    char query[72] = "%";
     char  x[70];
     char y[15];
     char z[70];
@@ -157,12 +158,15 @@ int FindQuery() {
     printf("productname = ");
     (void) fflush(stdout);
     if (scanf("%s", x) != EOF) {
-        (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, x, 0, NULL);
+        strcat(query, x);
+        strcat(query, "%");
+
+        (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, query, 0, NULL);
         
         (void) SQLExecute(stmt);
         
-        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) y, 70, NULL);
-        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) z, 70, NULL);
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) y, sizeof(y), NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) z, sizeof(z), NULL);
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
