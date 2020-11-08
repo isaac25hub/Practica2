@@ -30,13 +30,16 @@ menu.o: menu.c
 products.o: products.c odbc.c
 	$(CC) -c $^ $(CFLAGS) $(LDLIBS)	
 
+orders.o: orders.c odbc.c
+	$(CC) -c $^ $(CFLAGS) $(LDLIBS)	
+
 odbc.o: odbc.c
 	$(CC) -c $< $(CFLAGS) 
 
 main.o: main.c
 	$(CC) -c $< $(CFLAGS)
 
-compile: main.o menu.o products.o odbc.o
+compile: main.o menu.o products.o odbc.o orders.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
 	
 clean:
