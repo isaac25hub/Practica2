@@ -12,7 +12,7 @@ int StockQuery();
 int FindQuery();
 
 
-void showProductMenu() {
+void ShowProductMenu() {
     int nChoice = 0;
 
     do {
