@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "products.h"
-#include "menu.h"
 #include <string.h>
 #include <sql.h>
 #include <sqlext.h>
