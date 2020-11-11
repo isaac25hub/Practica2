@@ -10,7 +10,7 @@
 
 int OpenQuery();
 int RangeQuery();
-/*int DetailQuery();*/
+int DetailQuery();
 
 
 void ShowOrderMenu() {
@@ -32,7 +32,7 @@ void ShowOrderMenu() {
                 break;
 
             case 3: {
-                /*DetailQuery();*/
+                DetailQuery();
             }
                 break;
 
@@ -215,3 +215,136 @@ int RangeQuery() {
 }
 
 
+int DetailQuery() {
+    SQLHENV env = NULL;
+    SQLHDBC dbc = NULL;
+    SQLHSTMT stmt = NULL;
+    int ret; /* odbc.c */
+    SQLRETURN ret2; /* ODBC API return status */
+    int  x = 0;
+    char status[15] = "\0";
+    char fecha[11];
+    float total;
+    char pcode[15];
+    int quantity;
+    float price;
+
+    /* CONNECT */
+    ret = odbc_connect(&env, &dbc);
+    if (!SQL_SUCCEEDED(ret)) {
+        return EXIT_FAILURE;
+    }
+
+    /* Allocate a statement handle */
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+    ret = SQLPrepare(stmt, (SQLCHAR*) "select orderdate, status from orders where ordernumber = ?", SQL_NTS);
+    if (!SQL_SUCCEEDED(ret)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_ENV);
+        return ret;
+    }
+
+
+    printf("Introduce the ordernumber here: ");
+    (void) fflush(stdout);
+    if(scanf("%d", &x) != EOF) {
+        (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &x, 0, NULL);
+        
+        (void) SQLExecute(stmt);
+        
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) fecha, sizeof(fecha), NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) status, sizeof(status), NULL);
+
+        /* Loop through the rows in the result-set */
+        while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            printf("%s\t %s\n", fecha, status);
+        }
+
+        (void) SQLCloseCursor(stmt);
+
+    }
+    getchar();
+    printf("\n");
+
+    /* free up statement handle */
+    ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    if (!SQL_SUCCEEDED(ret2)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_STMT);
+        return ret;
+    }
+
+
+    /* Allocate a statement handle */
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+    ret = SQLPrepare(stmt, (SQLCHAR*) "select sum(quantityordered * priceeach) as total from orderdetails where ordernumber = ? group by ordernumber order by ordernumber", SQL_NTS);
+    if (!SQL_SUCCEEDED(ret)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_ENV);
+        return ret;
+    }
+
+
+    (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &x, 0, NULL);
+        
+    (void) SQLExecute(stmt);
+        
+    (void) SQLBindCol(stmt, 1, SQL_C_FLOAT, &total, 0, NULL);
+
+        /* Loop through the rows in the result-set */
+    while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+        printf("%.2f\n", total);
+    }
+
+    (void) SQLCloseCursor(stmt);
+    
+    printf("\n");
+
+    /* free up statement handle */
+    ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    if (!SQL_SUCCEEDED(ret2)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_STMT);
+        return ret;
+    }
+
+
+     /* Allocate a statement handle */
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+    ret = SQLPrepare(stmt, (SQLCHAR*) "select productcode, quantityordered, priceeach from orderdetails where ordernumber = ? order by orderlinenumber", SQL_NTS);
+    if (!SQL_SUCCEEDED(ret)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_ENV);
+        return ret;
+    }
+
+
+        (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &x, 0, NULL);
+        
+        (void) SQLExecute(stmt);
+        
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) pcode, sizeof(pcode), NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_LONG, &quantity, 0, NULL);
+        (void) SQLBindCol(stmt, 3, SQL_C_FLOAT, &price, 0, NULL);
+
+        /* Loop through the rows in the result-set */
+        while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            printf("%s\t %d\t %.2f\n", pcode, quantity, price);
+        }
+
+        (void) SQLCloseCursor(stmt);
+
+
+    
+    printf("\n\n\n\n");
+
+    /* free up statement handle */
+    ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    if (!SQL_SUCCEEDED(ret2)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_STMT);
+        return ret;
+    }
+
+    /* DISCONNECT */
+    ret = odbc_disconnect(env, dbc);
+    if (!SQL_SUCCEEDED(ret)) {
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}

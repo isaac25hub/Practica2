@@ -105,8 +105,7 @@ int StockQuery() {
 
         (void) SQLCloseCursor(stmt);
 
-        /*printf("x = ");
-        (void) fflush(stdout);*/
+        
     }
     printf("\n");
     getchar();
