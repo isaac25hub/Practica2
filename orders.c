@@ -150,8 +150,8 @@ int RangeQuery() {
     SQLRETURN ret2; /* ODBC API return status */
     #define BufferLength 512
 
-    char fecha1[11] = "2003-01-01";
-    char fecha2[11] = "2003-01-31";
+    char fecha1[11];
+    char fecha2[11];
     long ordernumber;
     char shippeddate[11];
     char orderdate[11];
@@ -169,8 +169,15 @@ int RangeQuery() {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
         return ret;
     }
-
     
+    printf("Introduzca la primera fecha: ");
+    scanf("%s", fecha1);
+    getchar();
+    printf("\n");
+    printf("Introduzca la segunda fecha: ");
+    scanf("%s", fecha2);
+    getchar();
+    printf("\n\n\n");
     
     (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, fecha1, 0, NULL);
     (void) SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, fecha2, 0, NULL);
