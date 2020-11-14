@@ -170,14 +170,14 @@ int RangeQuery() {
         return ret;
     }
     
-    printf("Introduzca la primera fecha: ");
-    scanf("%s", fecha1);
+    printf("Enter dates (YYYY-MM-DD - YYYY-MM-DD) > ");
+    scanf("%s - %s", fecha1, fecha2);
     getchar();
-    printf("\n");
+    /*printf("\n");
     printf("Introduzca la segunda fecha: ");
     scanf("%s", fecha2);
     getchar();
-    printf("\n\n\n");
+    printf("\n\n\n");*/
     
     (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, fecha1, 0, NULL);
     (void) SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, fecha2, 0, NULL);
@@ -190,7 +190,7 @@ int RangeQuery() {
 
     /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("%ld\t%s\t%s\n", ordernumber,orderdate,shippeddate);
+            printf("%ld %s %s\n", ordernumber,orderdate,shippeddate);
         }
 
         (void) SQLCloseCursor(stmt);
@@ -244,7 +244,7 @@ int DetailQuery() {
     }
 
 
-    printf("Introduce the ordernumber here: ");
+    printf("Enter ordernumber > ");
     (void) fflush(stdout);
     if(scanf("%d", &x) != EOF) {
         (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &x, 0, NULL);
@@ -256,7 +256,7 @@ int DetailQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("%s\t %s\n", fecha, status);
+            printf("Order Date=%s - status=%s\n", fecha, status);
         }
 
         (void) SQLCloseCursor(stmt);
@@ -290,7 +290,7 @@ int DetailQuery() {
 
         /* Loop through the rows in the result-set */
     while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-        printf("%.2f\n", total);
+        printf("Total sum = %f\n", total);
     }
 
     (void) SQLCloseCursor(stmt);
@@ -324,7 +324,7 @@ int DetailQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("%s\t %d\t %.2f\n", pcode, quantity, price);
+            printf("%s %d %.2f\n", pcode, quantity, price);
         }
 
         (void) SQLCloseCursor(stmt);

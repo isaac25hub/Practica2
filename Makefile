@@ -22,7 +22,7 @@ DROPDB = dropdb --if-exists
 PG_DUMP = pg_dump
 PG_RESTORE = pg_restore
 
-all: compile
+all: menu
 
 menu.o: menu.c 
 	$(CC) -c $< $(CFLAGS)
@@ -39,11 +39,11 @@ odbc.o: odbc.c
 main.o: main.c
 	$(CC) -c $< $(CFLAGS)
 
-compile: main.o menu.o products.o odbc.o orders.o
+menu: main.o menu.o products.o odbc.o orders.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
 	
 clean:
 	rm -f *.o
-	rm -f compile
+	rm -f menu
 
 	

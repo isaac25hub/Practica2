@@ -89,7 +89,7 @@ int StockQuery() {
     }
 
 
-    printf("productcode = ");
+    printf("Enter productcode > ");
     (void) fflush(stdout);
     if (scanf("%s", x) != EOF) {
         (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, x, 0, NULL);
@@ -100,7 +100,7 @@ int StockQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("quantityinstock = %ld\n", y);
+            printf("%ld\n", y);
         }
 
         (void) SQLCloseCursor(stmt);
@@ -153,7 +153,7 @@ int FindQuery() {
     }
 
 
-    printf("productname = ");
+    printf("Enter productname > ");
     (void) fflush(stdout);
     if (scanf("%s", x) != EOF) {
         strcat(query, x);
@@ -168,7 +168,7 @@ int FindQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("%s   %s\n", y, z);
+            printf("%s %s\n", y, z);
         }
 
         (void) SQLCloseCursor(stmt);
