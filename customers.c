@@ -11,7 +11,7 @@
 int ShowCustomerSubMenu();
 void FindCustomersQuery();
 void ListProductsQuery();
-/*int BalanceQuery();*/
+void BalanceQuery();
 
 
 void ShowCustomerMenu() {
@@ -33,7 +33,7 @@ void ShowCustomerMenu() {
                 break;
 
             case 3: {
-               /* BalanceQuery();*/
+               BalanceQuery();
             }
                 break;
 
@@ -194,6 +194,69 @@ void ListProductsQuery() {
     
 
     (void) getchar();    
+    printf("\n");
+
+    /* free up statement handle */
+    ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    if (!SQL_SUCCEEDED(ret2)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_STMT);
+        return;
+    }
+
+    /* DISCONNECT */
+    ret = odbc_disconnect(env, dbc);
+    if (!SQL_SUCCEEDED(ret)) {
+        return;
+    }
+
+    return;
+}
+
+void BalanceQuery() {
+    SQLHENV env = NULL;
+    SQLHDBC dbc = NULL;
+    SQLHSTMT stmt = NULL;
+    int ret; /* odbc.c */
+    SQLRETURN ret2; /* ODBC API return status */
+    int customernumber = 0;
+    float total = 0;
+    
+    
+
+    /* CONNECT */
+    ret = odbc_connect(&env, &dbc);
+    if (!SQL_SUCCEEDED(ret)) {
+        return;
+    }
+
+    /* Allocate a statement handle */
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+    ret = SQLPrepare(stmt, (SQLCHAR*) "select (q1.res1 - q2.res2) as total from (select sum(payments.amount) as res1 from payments	where payments.customernumber = ? group by payments.customernumber) as q1, (select sum(orderdetails.quantityordered*orderdetails.priceeach) as res2 from orderdetails, orders where orderdetails.ordernumber=orders.ordernumber and orders.customernumber = ? group by orders.customernumber) as q2", SQL_NTS);
+    if (!SQL_SUCCEEDED(ret)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_ENV);
+        return;
+    }
+    
+    printf("Enter customer number > ");
+if(scanf("%d", &customernumber) != EOF){
+    
+    
+    (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &customernumber, 0, NULL);
+    (void) SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &customernumber, 0, NULL);
+    
+    (void) SQLExecute(stmt);
+        
+    (void) SQLBindCol(stmt, 1, SQL_C_FLOAT, &total, 0, NULL);
+    
+
+    /* Loop through the rows in the result-set */
+        while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            printf("Balance = %.2f\n", total);
+        }
+
+        (void) SQLCloseCursor(stmt);
+}
+    (void) getchar();
     printf("\n");
 
     /* free up statement handle */
