@@ -22,7 +22,8 @@ DROPDB = dropdb --if-exists
 PG_DUMP = pg_dump
 PG_RESTORE = pg_restore
 
-all: menu
+compile: menu
+all: dropdb createdb restore shell
 
 menu.o: menu.c 
 	$(CC) -c $< $(CFLAGS)
@@ -44,6 +45,25 @@ main.o: main.c
 
 menu: main.o menu.o products.o odbc.o orders.o customers.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
+
+createdb:
+	@echo Creando BBDD
+	@$(CREATEDB)
+	
+dropdb:
+	@echo Eliminando BBDD
+	@$(DROPDB) $(DBNAME)
+	rm -f *.log
+dump:
+	@echo creando dumpfile
+	@$(PG_DUMP) > $(DBNAME).sql
+restore:
+	@echo restore data base
+	@cat $(DBNAME).sql | $(PSQL)  
+psql: shell
+shell:
+	@echo create psql shell
+	@$(PSQL)
 	
 clean:
 	rm -f *.o
