@@ -53,7 +53,7 @@ createdb:
 dropdb:
 	@echo Eliminando BBDD
 	@$(DROPDB) $(DBNAME)
-	rm -f *.log
+	
 dump:
 	@echo creando dumpfile
 	@$(PG_DUMP) > $(DBNAME).sql

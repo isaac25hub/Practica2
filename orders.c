@@ -124,7 +124,7 @@ void OpenQuery(){
     }
     printf("\n");
 
-    ret = SQLBindCol(stmt, 1, SQL_C_SLONG, &x, 0, NULL);
+    (void) SQLBindCol(stmt, 1, SQL_C_SLONG, &x, 0, NULL);
     
     /* Loop through the rows in the result-set */
     while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {

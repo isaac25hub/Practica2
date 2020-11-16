@@ -1,0 +1,30 @@
+customers.c:11:5: Function exported but not used outside customers:
+                     ShowCustomerSubMenu
+  A declaration is exported, but not used outside this module. Declaration can
+  use static qualifier. (Use -exportlocal to inhibit warning)
+   customers.c:75:1: Definition of ShowCustomerSubMenu
+customers.c:12:6: Function exported but not used outside customers:
+                     FindCustomersQuery
+   customers.c:154:1: Definition of FindCustomersQuery
+customers.c:13:6: Function exported but not used outside customers:
+                     ListProductsQuery
+   customers.c:227:1: Definition of ListProductsQuery
+customers.c:14:6: Function exported but not used outside customers:
+                     BalanceQuery
+   customers.c:297:1: Definition of BalanceQuery
+orders.c:10:5: Function exported but not used outside orders: ShowOrderSubMenu
+   orders.c:74:1: Definition of ShowOrderSubMenu
+orders.c:11:6: Function exported but not used outside orders: OpenQuery
+   orders.c:154:1: Definition of OpenQuery
+orders.c:12:6: Function exported but not used outside orders: RangeQuery
+   orders.c:229:1: Definition of RangeQuery
+orders.c:13:6: Function exported but not used outside orders: DetailQuery
+   orders.c:371:1: Definition of DetailQuery
+products.c:10:6: Function exported but not used outside products: StockQuery
+   products.c:137:1: Definition of StockQuery
+products.c:11:6: Function exported but not used outside products: FindQuery
+   products.c:212:1: Definition of FindQuery
+products.c:12:5: Function exported but not used outside products:
+                    ShowProductSubMenu
+   products.c:68:1: Definition of ShowProductSubMenu
+
