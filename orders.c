@@ -78,7 +78,7 @@ int OpenQuery(){
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
-    int ret; /* ODBC API return status */
+    int ret, ret2; /* ODBC API return status */
     SQLSMALLINT columns = 1; /* number of columns in result-set */
     SQLUSMALLINT ucolumns = 0;
     SQLUSMALLINT i = 0;
@@ -106,7 +106,7 @@ int OpenQuery(){
     /* How many columns are there */
     ret = SQLNumResultCols(stmt, &columns);
     if (!SQL_SUCCEEDED(ret)) {
-        odbc_extract_error("Error getting number of columns", stmt, SQL_HANDLE_STMT);
+        odbc_extract_error("", stmt, SQL_HANDLE_STMT);
         return ret;
     }
 
@@ -130,6 +130,12 @@ int OpenQuery(){
         printf("%d\n", x);
     }
 
+    ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    if (!SQL_SUCCEEDED(ret2)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_STMT);
+        return ret;
+    }
+
     /* DISCONNECT */
     ret = odbc_disconnect(env, dbc);
     if (!SQL_SUCCEEDED(ret)) {
@@ -148,8 +154,6 @@ int RangeQuery() {
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
-    #define BufferLength 512
-
     char fecha1[11];
     char fecha2[11];
     long ordernumber;
@@ -173,11 +177,7 @@ int RangeQuery() {
     printf("Enter dates (YYYY-MM-DD - YYYY-MM-DD) > ");
     scanf("%s - %s", fecha1, fecha2);
     getchar();
-    /*printf("\n");
-    printf("Introduzca la segunda fecha: ");
-    scanf("%s", fecha2);
-    getchar();
-    printf("\n\n\n");*/
+    
     
     (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, fecha1, 0, NULL);
     (void) SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, fecha2, 0, NULL);

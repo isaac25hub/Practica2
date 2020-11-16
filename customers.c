@@ -1,50 +1,59 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "products.h"
+#include "customers.h"
+#include "menu.h"
 #include <string.h>
 #include <sql.h>
 #include <sqlext.h>
 #include "odbc.h"
 
 
-int StockQuery();
-int FindQuery();
+int FindCustomersQuery();
+int ListProductsQuery();
+/*int BalanceQuery();*/
 
 
-void ShowProductMenu() {
+void ShowCustomerMenu() {
     int nChoice = 0;
 
     do {
-        nChoice = ShowProductSubMenu();
+        nChoice = ShowCustomerSubMenu();
         switch (nChoice) {
 
             case 1: {
-                StockQuery();
+                FindCustomersQuery();
             }
                 break;
 
             case 2: {
-                FindQuery();
+                
+               ListProductsQuery();
             }
                 break;
 
-            case 3: 
+            case 3: {
+               /* BalanceQuery();*/
+            }
+                break;
+
+            case 4: 
                 break;
 
         }
-    } while (nChoice != 3);
+    } while (nChoice != 4);
 }
 
 
-int ShowProductSubMenu() {
+int ShowCustomerSubMenu() {
     int nSelected = 0;
     char buf[16];
 
     do {
 
-        printf(" (1) Stock\n"
-               " (2) Find\n"
-               " (3) Back\n\n");
+        printf(" (1) Find\n"
+               " (2) List Products\n"
+               " (3) Balance\n"
+               " (4) Back\n\n");
 
         printf("Enter a number that corresponds to your choice > ");
         if (!fgets(buf, 16, stdin))
@@ -56,87 +65,26 @@ int ShowProductSubMenu() {
         printf("\n");
 
 
-        if ((nSelected < 1) || (nSelected > 3)) {
+        if ((nSelected < 1) || (nSelected > 4)) {
             printf("You have entered an invalid choice. Please try again\n\n\n");
         }
-    } while ((nSelected < 1) || (nSelected > 3));
+    } while ((nSelected < 1) || (nSelected > 4));
 
     return nSelected;
 }
 
-int StockQuery() {
-    SQLHENV env = NULL;
-    SQLHDBC dbc = NULL;
-    SQLHSTMT stmt = NULL;
-    int ret; /* odbc.c */
-    SQLRETURN ret2; /* ODBC API return status */
-    #define BufferLength 512
-    char x[15];
-    long y;
-
-    /* CONNECT */
-    ret = odbc_connect(&env, &dbc);
-    if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
-    }
-
-    /* Allocate a statement handle */
-    ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
-    ret = SQLPrepare(stmt, (SQLCHAR*) "select quantityinstock from products where productcode = ?", SQL_NTS);
-    if (!SQL_SUCCEEDED(ret)) {
-        odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
-    }
-
-
-    printf("Enter productcode > ");
-    (void) fflush(stdout);
-    if (scanf("%s", x) != EOF) {
-        (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, x, 0, NULL);
-        
-        (void) SQLExecute(stmt);
-        
-        (void) SQLBindCol(stmt, 1, SQL_C_LONG, &y, 0, NULL);
-
-        /* Loop through the rows in the result-set */
-        while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("%ld\n", y);
-        }
-
-        (void) SQLCloseCursor(stmt);
-
-        
-    }
-    printf("\n");
-    getchar();
-
-    /* free up statement handle */
-    ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-    if (!SQL_SUCCEEDED(ret2)) {
-        odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
-    }
-
-    /* DISCONNECT */
-    ret = odbc_disconnect(env, dbc);
-    if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
-}
-
-
-int FindQuery() {
+int FindCustomersQuery() {
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
     char query[72] = "%";
-    char  x[70];
-    char y[15];
-    char z[70];
+    int customernumber;
+    char contactfirstname[50];
+    char contactlastname[50];
+    char customername[50];
+    char name[50];
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
@@ -146,34 +94,37 @@ int FindQuery() {
 
     /* Allocate a statement handle */
     ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
-    ret = SQLPrepare(stmt, (SQLCHAR*) "select productcode, productname from products where productname like ? order by productcode", SQL_NTS);
+    ret = SQLPrepare(stmt, (SQLCHAR*) "select customernumber, contactfirstname, contactlastname, customername from customers where contactfirstname like ? or contactlastname like ? order by customernumber", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
         return ret;
     }
 
 
-    printf("Enter productname > ");
+    printf("Enter customer name > ");
     (void) fflush(stdout);
-    if (scanf("%s", x) != EOF) {
-        strcat(query, x);
+    if (scanf("%s", name) != EOF) {
+        strcat(query, name);
         strcat(query, "%");
 
         (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, query, 0, NULL);
+        (void) SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, query, 0, NULL);
         
         (void) SQLExecute(stmt);
         
-        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) y, sizeof(y), NULL);
-        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) z, sizeof(z), NULL);
+        (void) SQLBindCol(stmt, 1, SQL_C_LONG, &customernumber, 0, NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_CHAR, contactfirstname, sizeof(contactfirstname), NULL);
+        (void) SQLBindCol(stmt, 3, SQL_C_CHAR, contactlastname, sizeof(contactlastname), NULL);
+        (void) SQLBindCol(stmt, 4, SQL_C_CHAR, customername, sizeof(customername), NULL);
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
-            printf("%s %s\n", y, z);
+            printf("%d %s %s %s\n", customernumber, customername, contactfirstname, contactlastname);
         }
 
         (void) SQLCloseCursor(stmt);
 
-     
+       
     }
     printf("\n");
     getchar();
@@ -195,21 +146,67 @@ int FindQuery() {
 }
 
 
+int ListProductsQuery() {
+    SQLHENV env = NULL;
+    SQLHDBC dbc = NULL;
+    SQLHSTMT stmt = NULL;
+    int ret; /* odbc.c */
+    SQLRETURN ret2; /* ODBC API return status */
+    int customernumber;
+    long quantityordered = 0;
+    char productname[70];
+    
 
+    /* CONNECT */
+    ret = odbc_connect(&env, &dbc);
+    if (!SQL_SUCCEEDED(ret)) {
+        return EXIT_FAILURE;
+    }
 
+    /* Allocate a statement handle */
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+    ret = SQLPrepare(stmt, (SQLCHAR*) "select products.productname, sum(orderdetails.quantityordered) as total from orders,orderdetails,products where orders.ordernumber=orderdetails.ordernumber and orderdetails.productcode=products.productcode and orders.customernumber= ? group by products.productcode order by products.productcode", SQL_NTS);
+    if (!SQL_SUCCEEDED(ret)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_ENV);
+        return ret;
+    }
+    
+    printf("Enter customer number > ");
+    (void) fflush(stdout);
+    if(scanf("%d", &customernumber) != EOF) {
+        (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &customernumber, 0, NULL);
+        
+        (void) SQLExecute(stmt);
 
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR, (SQLCHAR*) productname, sizeof(productname), NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_LONG, &quantityordered, 0, NULL);
+        
 
+        /* Loop through the rows in the result-set */
+        while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            printf("%s %ld\n", productname, quantityordered);
+        }
 
+        (void) SQLCloseCursor(stmt);
 
+    }
+    
 
+    getchar();    
+    printf("\n");
 
+    /* free up statement handle */
+    ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    if (!SQL_SUCCEEDED(ret2)) {
+        odbc_extract_error("", stmt, SQL_HANDLE_STMT);
+        return ret;
+    }
 
+    /* DISCONNECT */
+    ret = odbc_disconnect(env, dbc);
+    if (!SQL_SUCCEEDED(ret)) {
+        return EXIT_FAILURE;
+    }
 
-
-
-
-
-
-
-
-
+    return EXIT_SUCCESS;
+}

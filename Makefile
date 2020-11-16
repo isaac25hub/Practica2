@@ -33,13 +33,16 @@ products.o: products.c odbc.c
 orders.o: orders.c odbc.c
 	$(CC) -c $^ $(CFLAGS) $(LDLIBS)	
 
+customers.o: customers.c odbc.c
+	$(CC) -c $^ $(CFLAGS) $(LDLIBS)	
+
 odbc.o: odbc.c
 	$(CC) -c $< $(CFLAGS) 
 
 main.o: main.c
 	$(CC) -c $< $(CFLAGS)
 
-menu: main.o menu.o products.o odbc.o orders.o
+menu: main.o menu.o products.o odbc.o orders.o customers.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
 	
 clean:

@@ -3,6 +3,7 @@
 #include "products.h"
 #include "menu.h"
 #include "orders.h"
+#include "customers.h"
 
 
 /**
@@ -32,7 +33,7 @@ int main(void) {
                 break;
             
             case 3: {
-                /**/
+                ShowCustomerMenu();
             }
                 break;
 
