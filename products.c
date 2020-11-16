@@ -76,6 +76,7 @@ void StockQuery() {
     #define BufferLength 512
     char x[15] = "\0";
     long y = 0;
+    int flag = 0;
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
@@ -103,6 +104,7 @@ void StockQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            flag = 1;
             printf("%ld\n", y);
         }
 
@@ -112,6 +114,11 @@ void StockQuery() {
     }
     printf("\n");
     (void) getchar();
+
+    if (flag == 0){
+        printf("ERROR en los datos de entrada o consulta vacía");
+        printf("\n\n\n");
+    }
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);

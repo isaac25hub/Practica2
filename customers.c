@@ -86,6 +86,7 @@ void FindCustomersQuery() {
     char contactlastname[50] = "\0";
     char customername[50] = "\0";
     char name[50] = "\0";
+    int flag = 0;
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
@@ -120,6 +121,7 @@ void FindCustomersQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            flag = 1;
             printf("%d %s %s %s\n", customernumber, customername, contactfirstname, contactlastname);
         }
 
@@ -129,6 +131,11 @@ void FindCustomersQuery() {
     }
     printf("\n");
     (void) getchar();
+
+    if (flag == 0){
+        printf("ERROR en los datos de entrada o consulta vacía");
+        printf("\n\n\n");
+    }
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -156,6 +163,7 @@ void ListProductsQuery() {
     int customernumber = 0;
     long quantityordered = 0;
     char productname[70] = "\0";
+    int flag = 0;
     
 
     /* CONNECT */
@@ -185,6 +193,7 @@ void ListProductsQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            flag = 1;
             printf("%s %ld\n", productname, quantityordered);
         }
 
@@ -195,6 +204,11 @@ void ListProductsQuery() {
 
     (void) getchar();    
     printf("\n");
+
+    if (flag == 0){
+        printf("ERROR en los datos de entrada o consulta vacía");
+        printf("\n\n\n");
+    }
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -220,6 +234,7 @@ void BalanceQuery() {
     SQLRETURN ret2; /* ODBC API return status */
     int customernumber = 0;
     float total = 0;
+    int flag = 0;
     
     
 
@@ -251,6 +266,7 @@ if(scanf("%d", &customernumber) != EOF){
 
     /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            flag = 1;
             printf("Balance = %.2f\n", total);
         }
 
@@ -258,6 +274,11 @@ if(scanf("%d", &customernumber) != EOF){
 }
     (void) getchar();
     printf("\n");
+
+    if (flag == 0){
+        printf("ERROR en los datos de entrada o consulta vacía");
+        printf("\n\n\n");
+    }
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);

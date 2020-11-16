@@ -84,6 +84,7 @@ void OpenQuery(){
     SQLUSMALLINT i = 0;
     SQLINTEGER x = 0;
     #define BufferLength 512
+    int flag = 0;
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
@@ -127,7 +128,13 @@ void OpenQuery(){
     
     /* Loop through the rows in the result-set */
     while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+        flag = 1;
         printf("%d\n", x);
+    }
+
+    if (flag == 0){
+        printf("ERROR en los datos de entrada o consulta vacía");
+        printf("\n\n\n");
     }
 
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -160,6 +167,7 @@ void RangeQuery() {
     long ordernumber = 0;
     char shippeddate[11] = "\0";
     char orderdate[11] = "\0";
+    int flag = 0;
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
@@ -190,6 +198,7 @@ if(scanf("%s - %s", fecha1, fecha2) != EOF){
 
     /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            flag = 1;
             printf("%ld %s %s\n", ordernumber,orderdate,shippeddate);
         }
 
@@ -197,6 +206,11 @@ if(scanf("%s - %s", fecha1, fecha2) != EOF){
 }
     (void) getchar();
     printf("\n");
+
+    if (flag == 0){
+        printf("ERROR en los datos de entrada o consulta vacía");
+        printf("\n\n\n");
+    }
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -228,6 +242,7 @@ void DetailQuery() {
     char pcode[15] = "\0";
     int quantity = 0;
     float price = 0;
+    int flag = 0;
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
@@ -256,6 +271,7 @@ void DetailQuery() {
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            flag = 1;
             printf("Order Date=%s - status=%s\n", fecha, status);
         }
 
@@ -331,7 +347,12 @@ void DetailQuery() {
 
 
     
-    printf("\n\n\n\n");
+   
+
+    if (flag == 0){
+        printf("ERROR en los datos de entrada o consulta vacía");
+        printf("\n\n\n");
+    }
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
