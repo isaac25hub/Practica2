@@ -7,8 +7,11 @@
 #include "odbc.h"
 
 
-int StockQuery();
-int FindQuery();
+void StockQuery();
+void FindQuery();
+int ShowProductSubMenu();
+
+
 
 
 void ShowProductMenu() {
@@ -64,20 +67,20 @@ int ShowProductSubMenu() {
     return nSelected;
 }
 
-int StockQuery() {
+void StockQuery() {
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
     #define BufferLength 512
-    char x[15];
-    long y;
+    char x[15] = "\0";
+    long y = 0;
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
     /* Allocate a statement handle */
@@ -85,7 +88,7 @@ int StockQuery() {
     ret = SQLPrepare(stmt, (SQLCHAR*) "select quantityinstock from products where productcode = ?", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
 
 
@@ -108,40 +111,41 @@ int StockQuery() {
         
     }
     printf("\n");
-    getchar();
+    (void) getchar();
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
     /* DISCONNECT */
     ret = odbc_disconnect(env, dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
-    return EXIT_SUCCESS;
+    return;
 }
 
 
-int FindQuery() {
+void FindQuery() {
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
     char query[72] = "%";
-    char  x[70];
-    char y[15];
-    char z[70];
+    char  x[70] = "\0";
+    char y[15] = "\0";
+    char z[70] = "\0";
+    int flag = 0;
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
     /* Allocate a statement handle */
@@ -149,7 +153,7 @@ int FindQuery() {
     ret = SQLPrepare(stmt, (SQLCHAR*) "select productcode, productname from products where productname like ? order by productcode", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
 
 
@@ -163,11 +167,12 @@ int FindQuery() {
         
         (void) SQLExecute(stmt);
         
-        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) y, sizeof(y), NULL);
-        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) z, sizeof(z), NULL);
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) y,(SQLLEN) sizeof(y), NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) z,(SQLLEN) sizeof(z), NULL);
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+            flag = 1;
             printf("%s %s\n", y, z);
         }
 
@@ -176,22 +181,27 @@ int FindQuery() {
      
     }
     printf("\n");
-    getchar();
+    (void) getchar();
+
+    if (flag == 0){
+        printf("ERROR en los datos de entrada o consulta vacía");
+        printf("\n\n\n");
+    }
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
     /* DISCONNECT */
     ret = odbc_disconnect(env, dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
-    return EXIT_SUCCESS;
+    return;
 }
 
 

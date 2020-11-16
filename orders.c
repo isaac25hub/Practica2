@@ -7,10 +7,10 @@
 #include <sqlext.h>
 #include "odbc.h"
 
-
-int OpenQuery();
-int RangeQuery();
-int DetailQuery();
+int ShowOrderSubMenu();
+void OpenQuery();
+void RangeQuery();
+void DetailQuery();
 
 
 void ShowOrderMenu() {
@@ -46,7 +46,7 @@ void ShowOrderMenu() {
 
 int ShowOrderSubMenu() {
     int nSelected = 0;
-    char buf[16];
+    char buf[16] = "\0";
 
     do {
 
@@ -74,7 +74,7 @@ int ShowOrderSubMenu() {
 }
 
 
-int OpenQuery(){
+void OpenQuery(){
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
@@ -88,26 +88,26 @@ int OpenQuery(){
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
     /* Allocate a statement handle */
     ret = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
     /* simple query */
     ret = SQLExecDirect(stmt, (SQLCHAR*) "select ordernumber from orders where shippeddate is NULL order by ordernumber", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
     /* How many columns are there */
     ret = SQLNumResultCols(stmt, &columns);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
     /* print the name of each column */
@@ -117,7 +117,7 @@ int OpenQuery(){
         ret = SQLDescribeCol(stmt, i, (SQLCHAR *) buf, BufferLength, NULL, NULL, NULL, NULL, NULL);
         if (!SQL_SUCCEEDED(ret)) {
             odbc_extract_error("Error in SQLDescribeCol", stmt, SQL_HANDLE_STMT);
-            return ret;
+            return;
         }
         printf("%s\t", buf);
     }
@@ -133,37 +133,38 @@ int OpenQuery(){
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
     /* DISCONNECT */
     ret = odbc_disconnect(env, dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
     printf("\n\n\n");
 
-    return EXIT_SUCCESS;
+    return;
 }
 
 
 
-int RangeQuery() {
+void RangeQuery() {
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
-    char fecha1[11];
-    char fecha2[11];
-    long ordernumber;
-    char shippeddate[11];
-    char orderdate[11];
+    
+    char fecha1[11] = "\0";
+    char fecha2[11] = "\0";
+    long ordernumber = 0;
+    char shippeddate[11] = "\0";
+    char orderdate[11] = "\0";
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
     /* Allocate a statement handle */
@@ -171,12 +172,11 @@ int RangeQuery() {
     ret = SQLPrepare(stmt, (SQLCHAR*) "select ordernumber, orderdate, shippeddate from orders where orderdate between ? and ? order by ordernumber", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
     
     printf("Enter dates (YYYY-MM-DD - YYYY-MM-DD) > ");
-    scanf("%s - %s", fecha1, fecha2);
-    getchar();
+if(scanf("%s - %s", fecha1, fecha2) != EOF){
     
     
     (void) SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR, 0, 0, fecha1, 0, NULL);
@@ -185,8 +185,8 @@ int RangeQuery() {
     (void) SQLExecute(stmt);
         
     (void) SQLBindCol(stmt, 1, SQL_C_LONG, &ordernumber, 0, NULL);
-    (void) SQLBindCol(stmt, 2, SQL_C_CHAR, (SQLDATE*) orderdate, sizeof(orderdate), NULL);
-    (void) SQLBindCol(stmt, 3, SQL_C_CHAR, (SQLDATE*) shippeddate, sizeof(shippeddate), NULL);
+    (void) SQLBindCol(stmt, 2, SQL_C_CHAR, (SQLDATE*) orderdate, (SQLLEN) sizeof(orderdate), NULL);
+    (void) SQLBindCol(stmt, 3, SQL_C_CHAR, (SQLDATE*) shippeddate,(SQLLEN) sizeof(shippeddate), NULL);
 
     /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
@@ -194,28 +194,28 @@ int RangeQuery() {
         }
 
         (void) SQLCloseCursor(stmt);
-
-    
+}
+    (void) getchar();
     printf("\n");
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
     /* DISCONNECT */
     ret = odbc_disconnect(env, dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
-    return EXIT_SUCCESS;
+    return;
 }
 
 
-int DetailQuery() {
+void DetailQuery() {
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
@@ -223,16 +223,16 @@ int DetailQuery() {
     SQLRETURN ret2; /* ODBC API return status */
     int  x = 0;
     char status[15] = "\0";
-    char fecha[11];
-    float total;
-    char pcode[15];
-    int quantity;
-    float price;
+    char fecha[11] = "\0";
+    float total = 0;
+    char pcode[15] = "\0";
+    int quantity = 0;
+    float price = 0;
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
     /* Allocate a statement handle */
@@ -240,7 +240,7 @@ int DetailQuery() {
     ret = SQLPrepare(stmt, (SQLCHAR*) "select orderdate, status from orders where ordernumber = ?", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
 
 
@@ -251,8 +251,8 @@ int DetailQuery() {
         
         (void) SQLExecute(stmt);
         
-        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) fecha, sizeof(fecha), NULL);
-        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) status, sizeof(status), NULL);
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) fecha,(SQLLEN) sizeof(fecha), NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_CHAR,(SQLCHAR *) status,(SQLLEN) sizeof(status), NULL);
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
@@ -262,14 +262,14 @@ int DetailQuery() {
         (void) SQLCloseCursor(stmt);
 
     }
-    getchar();
+    (void) getchar();
     printf("\n");
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
 
@@ -278,7 +278,7 @@ int DetailQuery() {
     ret = SQLPrepare(stmt, (SQLCHAR*) "select sum(quantityordered * priceeach) as total from orderdetails where ordernumber = ? group by ordernumber order by ordernumber", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
 
 
@@ -301,7 +301,7 @@ int DetailQuery() {
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
 
@@ -310,7 +310,7 @@ int DetailQuery() {
     ret = SQLPrepare(stmt, (SQLCHAR*) "select productcode, quantityordered, priceeach from orderdetails where ordernumber = ? order by orderlinenumber", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
 
 
@@ -318,7 +318,7 @@ int DetailQuery() {
         
         (void) SQLExecute(stmt);
         
-        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) pcode, sizeof(pcode), NULL);
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR,(SQLCHAR *) pcode,(SQLLEN) sizeof(pcode), NULL);
         (void) SQLBindCol(stmt, 2, SQL_C_LONG, &quantity, 0, NULL);
         (void) SQLBindCol(stmt, 3, SQL_C_FLOAT, &price, 0, NULL);
 
@@ -337,14 +337,14 @@ int DetailQuery() {
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
     /* DISCONNECT */
     ret = odbc_disconnect(env, dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
-    return EXIT_SUCCESS;
+    return;
 }

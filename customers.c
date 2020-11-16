@@ -8,8 +8,9 @@
 #include "odbc.h"
 
 
-int FindCustomersQuery();
-int ListProductsQuery();
+int ShowCustomerSubMenu();
+void FindCustomersQuery();
+void ListProductsQuery();
 /*int BalanceQuery();*/
 
 
@@ -73,23 +74,23 @@ int ShowCustomerSubMenu() {
     return nSelected;
 }
 
-int FindCustomersQuery() {
+void FindCustomersQuery() {
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
     char query[72] = "%";
-    int customernumber;
-    char contactfirstname[50];
-    char contactlastname[50];
-    char customername[50];
-    char name[50];
+    int customernumber = 0;
+    char contactfirstname[50] = "\0";
+    char contactlastname[50] = "\0";
+    char customername[50] = "\0";
+    char name[50] = "\0";
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
     /* Allocate a statement handle */
@@ -97,7 +98,7 @@ int FindCustomersQuery() {
     ret = SQLPrepare(stmt, (SQLCHAR*) "select customernumber, contactfirstname, contactlastname, customername from customers where contactfirstname like ? or contactlastname like ? order by customernumber", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
 
 
@@ -113,9 +114,9 @@ int FindCustomersQuery() {
         (void) SQLExecute(stmt);
         
         (void) SQLBindCol(stmt, 1, SQL_C_LONG, &customernumber, 0, NULL);
-        (void) SQLBindCol(stmt, 2, SQL_C_CHAR, contactfirstname, sizeof(contactfirstname), NULL);
-        (void) SQLBindCol(stmt, 3, SQL_C_CHAR, contactlastname, sizeof(contactlastname), NULL);
-        (void) SQLBindCol(stmt, 4, SQL_C_CHAR, customername, sizeof(customername), NULL);
+        (void) SQLBindCol(stmt, 2, SQL_C_CHAR, (SQLCHAR*) contactfirstname, (SQLLEN) sizeof(contactfirstname), NULL);
+        (void) SQLBindCol(stmt, 3, SQL_C_CHAR, (SQLCHAR*) contactlastname, (SQLLEN)sizeof(contactlastname), NULL);
+        (void) SQLBindCol(stmt, 4, SQL_C_CHAR, (SQLCHAR*) customername, (SQLLEN)sizeof(customername), NULL);
 
         /* Loop through the rows in the result-set */
         while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
@@ -127,40 +128,40 @@ int FindCustomersQuery() {
        
     }
     printf("\n");
-    getchar();
+    (void) getchar();
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
     /* DISCONNECT */
     ret = odbc_disconnect(env, dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
-    return EXIT_SUCCESS;
+    return;
 }
 
 
-int ListProductsQuery() {
+void ListProductsQuery() {
     SQLHENV env = NULL;
     SQLHDBC dbc = NULL;
     SQLHSTMT stmt = NULL;
     int ret; /* odbc.c */
     SQLRETURN ret2; /* ODBC API return status */
-    int customernumber;
+    int customernumber = 0;
     long quantityordered = 0;
-    char productname[70];
+    char productname[70] = "\0";
     
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
     /* Allocate a statement handle */
@@ -168,7 +169,7 @@ int ListProductsQuery() {
     ret = SQLPrepare(stmt, (SQLCHAR*) "select products.productname, sum(orderdetails.quantityordered) as total from orders,orderdetails,products where orders.ordernumber=orderdetails.ordernumber and orderdetails.productcode=products.productcode and orders.customernumber= ? group by products.productcode order by products.productcode", SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
         odbc_extract_error("", stmt, SQL_HANDLE_ENV);
-        return ret;
+        return;
     }
     
     printf("Enter customer number > ");
@@ -178,7 +179,7 @@ int ListProductsQuery() {
         
         (void) SQLExecute(stmt);
 
-        (void) SQLBindCol(stmt, 1, SQL_C_CHAR, (SQLCHAR*) productname, sizeof(productname), NULL);
+        (void) SQLBindCol(stmt, 1, SQL_C_CHAR, (SQLCHAR*) productname,(SQLLEN) sizeof(productname), NULL);
         (void) SQLBindCol(stmt, 2, SQL_C_LONG, &quantityordered, 0, NULL);
         
 
@@ -192,21 +193,21 @@ int ListProductsQuery() {
     }
     
 
-    getchar();    
+    (void) getchar();    
     printf("\n");
 
     /* free up statement handle */
     ret2 = SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     if (!SQL_SUCCEEDED(ret2)) {
         odbc_extract_error("", stmt, SQL_HANDLE_STMT);
-        return ret;
+        return;
     }
 
     /* DISCONNECT */
     ret = odbc_disconnect(env, dbc);
     if (!SQL_SUCCEEDED(ret)) {
-        return EXIT_FAILURE;
+        return;
     }
 
-    return EXIT_SUCCESS;
+    return;
 }

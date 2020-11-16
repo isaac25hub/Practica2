@@ -2,6 +2,6 @@
 #define ORDERS_H
 
 void ShowOrderMenu();
-int ShowOrderSubMenu();
+
 
 #endif
